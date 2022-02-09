@@ -7,4 +7,4 @@ solver.SetFunction(new Function());
 solver.SetMethod(new Fibonacci());
 solver.Compute();
 solver.WriteToFile("result.txt");
-Console.WriteLine(SearcherInterval.Search(new Function(), 1E-7));
+Console.WriteLine(SearcherInterval.Search(new Function(), 0.5, 1E-7));
