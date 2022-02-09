@@ -2,9 +2,8 @@ namespace oMethods_1;
 
 public static class SearcherInterval
 {
-    public static Interval Search(IFunction function, double sigma)
+    public static Interval Search(IFunction function, double x0, double sigma)
     {
-        double x0 = 30;
         double x, xk, xk1, h;
 
         if (function.Func(x0) > function.Func(x0 + sigma))
