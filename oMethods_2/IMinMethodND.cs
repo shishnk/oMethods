@@ -1,8 +1,9 @@
 namespace oMethods_2;
 
 public interface IMinMethodND {
-    public Point2D Min { get; }
+    public Argument Min { get; }
     public double Eps { get; init; }
+    public bool Need1DSearch { get; }
 
-    public void Compute(Point2D initPoint, IFunction function);
+    public void Compute(Argument initPoint, IFunction function);
 }
