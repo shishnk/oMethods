@@ -21,14 +21,14 @@ public class Matrix {
                 A[i, j] = 0;
     }
 
-    public static Point2D operator *(Matrix matrix, double[] vector) {
-        double[] result = new double[matrix.Size];
+    public static Argument operator *(Matrix matrix, Argument vector) {
+        Argument result = new(matrix.Size);
 
         for (int i = 0; i < matrix.Size; i++)
             for (int j = 0; j < matrix.Size; j++)
                 result[i] += matrix[i, j] * vector[j];
 
-        return new(result[0], result[1]);
+        return result;
     }
 
     public static Matrix operator /(Matrix matrix, double constant) {
