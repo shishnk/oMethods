@@ -1,8 +1,8 @@
 namespace oMethods_2;
 
 public class Polynom : IFunction {
-    public double Value(Point2D point)
-        => (point.X * point.X + point.Y * point.Y) *
-            (point.X * point.X + point.Y * point.Y) -
-            (point.X - 3 * point.Y) * (point.X - 3 * point.Y);
+    public double Value(Argument arg)
+        => (arg[0] * arg[0] + arg[1] * arg[1]) *
+            (arg[0] * arg[0] + arg[1] * arg[1]) -
+            (arg[0] - 3 * arg[1]) * (arg[0] - 3 * arg[1]);
 }
