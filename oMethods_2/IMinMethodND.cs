@@ -5,5 +5,5 @@ public interface IMinMethodND {
     public double Eps { get; init; }
     public bool Need1DSearch { get; }
 
-    public void Compute(Argument initPoint, IFunction function);
+    public void Compute(Argument initPoint, IFunction function, IMinMethod1D method);
 }
