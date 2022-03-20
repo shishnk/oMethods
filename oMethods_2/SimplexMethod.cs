@@ -1,12 +1,13 @@
 namespace oMethods_2;
 
 public class SimplexMethod : IMinMethodND {
-    private Point2D _min;
-    public Point2D Min
-        => _min;
+    private Argument _min;
+    public Argument Min => _min;
+    public bool Need1DSearch => false;
     public int MaxIters { get; init; }
     public double Step { get; init; }
     public double Eps { get; init; }
+
 
     public SimplexMethod(int maxIters, double step, double eps) {
         MaxIters = maxIters;
@@ -14,74 +15,82 @@ public class SimplexMethod : IMinMethodND {
         Eps = eps;
     }
 
-    public void Compute(Point2D initPoint, IFunction function) {
-        List<Point2D> coords = new();  // for graphics
-        Point2D[] points = new Point2D[3];
+    public void Compute(Argument initPoint, IFunction function) {
+        List<Argument> coords = new();  // for graphics
+        Argument[] points = new Argument[initPoint.Number + 1];
+
         int iters;
+        int n = initPoint.Number;
 
-        double d1 = Step * (Math.Sqrt(2 + 1) + 2 - 1) / (2 * Math.Sqrt(2));
-        double d2 = Step / ((2 * Math.Sqrt(2)) * (Math.Sqrt(2 + 1) - 1));
+        Argument xG = new(n);
+        Argument xR = new(n);
+        Argument xC = new(n);
+        Argument xE = new(n);
 
-        points[0] = initPoint;
-        points[1] = new(d1, d2);
-        points[2] = new(d2, d1);
+        double d1 = Step * (Math.Sqrt(n + 1) + n - 1) / (n * Math.Sqrt(2));
+        double d2 = Step / ((n * Math.Sqrt(2)) * (Math.Sqrt(n + 1) - 1));
+
+        points[2] = (Argument)initPoint.Clone();
+        points[0] = new(n);
+        points[1] = new(n);
+
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++) {
+                if (i == j) {
+                    points[i][j] = d1;
+                    continue;
+                }
+
+                points[i][j] = d2;
+            }
+
         coords.Add(initPoint);
 
         for (iters = 0; iters < MaxIters; iters++) {
-            Point2D xG;
-            Point2D xR;
-            Point2D xC;
-            Point2D xE;
-
-            double sumX = 0;
-            double sumY = 0;
-
             points = points.OrderBy(point => function.Value(point)).ToArray();
             coords.Add(points[0]);
+            xG.Fill(0);
 
-            for (int i = 0; i < 2; i++) {
-                sumX += points[i].X;
-                sumY += points[i].Y;
-            }
-
-            xG = new(sumX / 2.0, sumY / 2.0);
+            for (int i = 0; i < n; i++)
+                for (int j = 0; j < n; j++)
+                    xG[i] += points[j][i] / n;
 
             if (Criteria(points, xG, function)) {
                 _min = points[0];
                 break;
             }
 
-            xR = Reflection(points, xG);
+            Reflection(points, xG, xR);
 
             if (function.Value(points[0]) <= function.Value(xR)
-                && function.Value(xR) < function.Value(points[1])) {
-                points[2] = xR;
+                && function.Value(xR) < function.Value(points[n - 1])) {
+                points[n] = (Argument)xR.Clone();
                 continue;
             } else if (function.Value(xR) < function.Value(points[0])) {
-                xE = Expansion(xG, xR);
+                Expansion(xG, xR, xE);
 
                 if (function.Value(xE) < function.Value(xR)) {
-                    points[2] = xE;
+                    points[n] = (Argument)xE.Clone();
                     continue;
                 } else {
-                    points[2] = xR;
+                    points[n] = (Argument)xR.Clone();
                     continue;
                 }
-            } else if (function.Value(xR) < function.Value(points[2])) {
-                xC = OutsideContraction(xG, xR);
+            } else if (function.Value(xR) < function.Value(points[n])) {
+                OutsideContraction(xG, xR, xC);
 
                 if (function.Value(xC) < function.Value(xR)) {
-                    points[2] = xC;
+                    points[n] = (Argument)xC.Clone();
                     continue;
                 } else {
                     Shrink(points);
                     continue;
                 }
             } else {
-                xC = InsideContraction(points, xG);
+                InsideContraction(points, xG, xC);
 
-                if (function.Value(xC) < function.Value(points[2])) {
-                    points[2] = xC;
+                if (function.Value(xC) < function.Value(points[n])) {
+                    points[n] = (Argument)xC.Clone();
                     continue;
                 } else {
                     Shrink(points);
@@ -98,37 +107,45 @@ public class SimplexMethod : IMinMethodND {
                 sw.WriteLine(coords[i]);
         }
 
-        Console.WriteLine($"f({_min.X}; {_min.Y}) = {function.Value(_min)}");
+        Console.WriteLine($"f(min) = {function.Value(_min)}");
     }
 
-    private bool Criteria(Point2D[] points, Point2D xG, IFunction function) {
+    private bool Criteria(Argument[] points, Argument xG, IFunction function) {
         double sum = 0;
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < xG.Number + 1; i++) {
             sum += (function.Value(points[i]) - function.Value(xG)) *
                    (function.Value(points[i]) - function.Value(xG));
         }
 
-        if (Math.Sqrt(sum / (2 + 1)) < Eps)
+        if (Math.Sqrt(sum / (xG.Number + 1)) < Eps)
             return true;
         else
             return false;
     }
 
-    private Point2D Reflection(Point2D[] points, Point2D xG)
-        => new(xG.X - points[2].X + xG.X, xG.Y - points[2].Y + xG.Y);
+    private void Reflection(Argument[] points, Argument xG, Argument xR) {
+        for (int i = 0; i < xG.Number; i++)
+            xR[i] = xG[i] - points[xG.Number][i] + xG[i];
+    }
 
-    private Point2D Expansion(Point2D xG, Point2D xR)
-        => new(xG.X + 2 * (xR.X - xG.X), xG.Y + 2 * (xR.Y - xG.Y));
+    private void Expansion(Argument xG, Argument xR, Argument xE) {
+        for (int i = 0; i < xG.Number; i++)
+            xE[i] = xG[i] + 2 * (xR[i] - xG[i]);
+    }
 
-    private Point2D OutsideContraction(Point2D xG, Point2D xR)
-        => new(xG.X + 0.5 * (xR.X - xG.X), xG.Y + 0.5 * (xR.Y - xG.Y));
+    private void OutsideContraction(Argument xG, Argument xR, Argument xC) {
+        for (int i = 0; i < xG.Number; i++)
+            xC[i] = xG[i] + 0.5 * (xR[i] - xG[i]);
+    }
 
-    private Point2D InsideContraction(Point2D[] points, Point2D xG)
-         => new(xG.X + 0.5 * (points[2].X - xG.X), xG.Y + 0.5 * (points[2].Y - xG.Y));
+    private void InsideContraction(Argument[] points, Argument xG, Argument xC) {
+        for (int i = 0; i < xG.Number; i++)
+            xC[i] = xG[i] + 0.5 * (points[xG.Number][i] - xG[i]);
+    }
 
-    private void Shrink(Point2D[] points) {
-        for (int i = 1; i <= 2; i++)
-            points[i] = points[0] + 0.5 * (points[i] - points[0]);
+    private void Shrink(Argument[] points) {
+        for (int i = 1; i <= points[0].Number; i++)
+            points[i] = (Argument)(points[0] + 0.5 * (points[i] - points[0])).Clone();
     }
 }
