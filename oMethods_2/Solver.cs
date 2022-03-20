@@ -2,13 +2,14 @@ namespace oMethods_2;
 
 public class Solver {
     private IFunction _function;
-    private IMinMethodND _method;
-    private Point2D _initPoint;
+    private IMinMethodND _methodND;
+    private IMinMethod1D _method1D;
+    private Argument _initPoint;
 
     public Solver(string initPointPath) {
         try {
             using (var sr = new StreamReader(initPointPath)) {
-                _initPoint = JsonConvert.DeserializeObject<Point2D>(sr.ReadToEnd());
+                _initPoint = JsonConvert.DeserializeObject<Argument>(sr.ReadToEnd());
             }
 
         } catch (Exception ex) {
@@ -19,12 +20,15 @@ public class Solver {
     public void Compute() {
         try {
             if (_function is null)
-                throw new Exception("Set the function!");
+                throw new ArgumentNullException(nameof(_function), "Set the function!");
 
-            if (_method is null)
-                throw new Exception("Set the method of minimization!");
+            if (_methodND.Need1DSearch && _method1D is null)
+                throw new ArgumentNullException(nameof(_method1D), "Set the one dimensional search method!");
 
-            _method.Compute(_initPoint, _function);
+            if (_methodND is null)
+                throw new ArgumentNullException(nameof(_methodND), "Set the method of minimization!");
+
+            _methodND.Compute(_initPoint, _function);
 
         } catch (Exception ex) {
             Console.WriteLine($"We had problem: {ex.Message}");
@@ -34,6 +38,9 @@ public class Solver {
     public void SetFunction(IFunction function)
         => _function = function;
 
+    public void SetMinMethod1D(IMinMethod1D method)
+        => _method1D = method;
+
     public void SetMinMethod(IMinMethodND method)
-        => _method = method;
+        => _methodND = method;
 }
