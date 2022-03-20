@@ -28,7 +28,7 @@ public class Solver {
             if (_methodND is null)
                 throw new ArgumentNullException(nameof(_methodND), "Set the method of minimization!");
 
-            _methodND.Compute(_initPoint, _function);
+            _methodND.Compute(_initPoint, _function, _method1D);
 
         } catch (Exception ex) {
             Console.WriteLine($"We had problem: {ex.Message}");

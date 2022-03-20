@@ -1,15 +1,14 @@
 namespace oMethods_2;
 
-public class Fibonacci {
+public class Fibonacci : IMinMethod1D {
     private double _min;
-    public double Min
-        => _min;
+    public double Min => _min;
     public double Eps { get; init; }
 
     public Fibonacci(double eps)
         => Eps = eps;
 
-    public void Compute(Interval interval, IFunction function, Point2D argument, Point2D direction) {
+    public void Compute(Interval interval, IFunction function, Argument argument, Argument direction) {
         int n = 1;
 
         while ((interval.Right - interval.Left) / Eps > Fib(n + 2))

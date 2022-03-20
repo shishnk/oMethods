@@ -1,7 +1,7 @@
 namespace oMethods_2;
 
 public static class SearcherInterval {
-    public static Interval Search(IFunction function, double x0, double delta, Point2D direction, Point2D argument) {
+    public static Interval Search(IFunction function, double x0, double delta, Argument direction, Argument argument) {
         double x, xk, xk1, h;
 
         if (function.Value(argument + x0 * direction) > function.Value(argument + (x0 + delta) * direction)) {
