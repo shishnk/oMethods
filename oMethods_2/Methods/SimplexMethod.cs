@@ -8,14 +8,13 @@ public class SimplexMethod : IMinMethodND {
     public double Step { get; init; }
     public double Eps { get; init; }
 
-
     public SimplexMethod(int maxIters, double step, double eps) {
         MaxIters = maxIters;
         Step = step;
         Eps = eps;
     }
 
-    public void Compute(Argument initPoint, IFunction function) {
+    public void Compute(Argument initPoint, IFunction function, IMinMethod1D method) {
         List<Argument> coords = new();  // for graphics
         Argument[] points = new Argument[initPoint.Number + 1];
 

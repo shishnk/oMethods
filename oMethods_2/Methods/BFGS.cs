@@ -18,6 +18,7 @@ public class BFGS : IMinMethodND {
         int iters;
         double h = 1E-14;
 
+        List<Argument> coords = new(); // для графики
         Matrix H = new(n);
         Matrix H1 = new(n);
         Argument nextPoint = new(n);
@@ -36,6 +37,8 @@ public class BFGS : IMinMethodND {
 
         for (iters = 0; iters < MaxIters; iters++) {
             direction.Fill(0);
+            coords.Add(initPoint);
+
             denominatorAsNumber = 0;
 
             if (iters % 2 == 0 && iters != 0) {
@@ -106,6 +109,11 @@ public class BFGS : IMinMethodND {
         Console.WriteLine($"Iterations: {iters}");
         Console.WriteLine(JsonConvert.SerializeObject(_min));
         Console.WriteLine($"f(min) = {function.Value(_min)}");
+
+        using (var sw = new StreamWriter("coords.txt")) {
+            for (int i = 0; i < coords.Count; i++)
+                sw.WriteLine(coords[i]);
+        }
     }
 
     private double Norm(Argument arg) {
