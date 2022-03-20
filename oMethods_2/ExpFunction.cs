@@ -1,7 +1,7 @@
 namespace oMethods_2;
 
 public class ExpFunction : IFunction {
-    public double Value(Point2D point) // Maximum
-        => -(3 * Math.Exp(-(point.X - 2) * (point.X - 2) - ((point.Y - 3) / 2) * ((point.Y - 3) / 2)) +
-        Math.Exp(-((point.X - 1) / 2) * ((point.X - 1) / 2) - (point.Y - 1) * (point.Y - 1)));
+    public double Value(Argument arg) // Maximum
+        => -(3 * Math.Exp(-(arg[0] - 2) * (arg[0] - 2) - ((arg[1] - 3) / 2) * ((arg[1] - 3) / 2)) +
+        Math.Exp(-((arg[0] - 1) / 2) * ((arg[0] - 1) / 2) - (arg[1] - 1) * (arg[1] - 1)));
 }
