@@ -30,6 +30,15 @@ public class Argument : ICloneable {
         return result;
     }
 
+    public override bool Equals(Object obj) {
+        if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+            return false;
+        else {
+            Argument arg = (Argument)obj;
+            return (this.Number == arg.Number) && (this.Variables.OrderBy(x => x).SequenceEqual(arg.Variables.OrderBy(x => x)));
+        }
+    }
+
     public static Argument operator -(Argument fstArg, Argument sndArg) {
         Argument result = new(fstArg.Number);
 
@@ -62,5 +71,9 @@ public class Argument : ICloneable {
         Array.Copy(this.Variables, arg.Variables, this.Number);
 
         return arg;
+    }
+
+    public override int GetHashCode() {
+        return base.GetHashCode();
     }
 }
