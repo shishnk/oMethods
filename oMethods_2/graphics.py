@@ -28,7 +28,7 @@ def variant():
 
     x1 = 1 + (X - 2)**2 + ((Y - 2) / 2)**2
     x2 = 1 + ((X - 2)/3)**2 + (Y - 3)**2
-    Z  = (3.0/x1) + (2.0/x2)
+    Z  = -((3.0/x1) + (2.0/x2))
 
     return X, Y, Z
 
@@ -51,7 +51,7 @@ def main():
             x.append(dcm(xC))
             y.append(dcm(yC))
 
-    _levels = np.arange(0, 900, 30)
+    _levels = np.arange(-10, 0, 1)
     figure, axes = plt.subplots(1, 1)
 
     num = input("Enter the test: \n1) Rosenbrock \n2) Quadratic \n3) Function for 8 variant\n")
@@ -81,6 +81,7 @@ def main():
 
     plt.grid()
     axes.set_aspect(1)
+    # plt.savefig("graphics/test_s_1.png")
     plt.show()
 
 if __name__ == "__main__":
