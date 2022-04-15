@@ -36,7 +36,5 @@ public class QuadraticInterpolation : IMinMethod1D {
             } else
                 x0 = xk;
         }
-
-        // Console.WriteLine(iters);
     }
 }

@@ -38,7 +38,7 @@ public class Fibonacci : IMinMethod1D {
         _min = interval.Center;
     }
 
-    private double Fib(int n)
+    private static double Fib(int n)
         => (Math.Pow((1 + Math.Sqrt(5)) / 2, n) -
             Math.Pow((1 - Math.Sqrt(5)) / 2, n)) / Math.Sqrt(5);
 }

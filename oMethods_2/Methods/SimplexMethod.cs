@@ -61,40 +61,32 @@ public class SimplexMethod : IMinMethodND {
 
             Reflection(points, xG, xR);
 
-            if (function.Value(points[0]) <= function.Value(xR)
-                && function.Value(xR) < function.Value(points[n - 1])) {
+            double value = function.Value(xR);
+
+            if (function.Value(points[0]) <= value
+                && value < function.Value(points[n - 1])) {
                 points[n] = (Argument)xR.Clone();
-                continue;
             } else if (function.Value(xR) < function.Value(points[0])) {
                 Expansion(xG, xR, xE);
 
-                if (function.Value(xE) < function.Value(xR)) {
+                if (function.Value(xE) < value) {
                     points[n] = (Argument)xE.Clone();
-                    continue;
-                } else {
+                } else
                     points[n] = (Argument)xR.Clone();
-                    continue;
-                }
-            } else if (function.Value(xR) < function.Value(points[n])) {
+            } else if (value < function.Value(points[n])) {
                 OutsideContraction(xG, xR, xC);
 
-                if (function.Value(xC) < function.Value(xR)) {
+                if (function.Value(xC) < value) {
                     points[n] = (Argument)xC.Clone();
-                    continue;
-                } else {
+                } else
                     Shrink(points);
-                    continue;
-                }
             } else {
                 InsideContraction(points, xG, xC);
 
                 if (function.Value(xC) < function.Value(points[n])) {
                     points[n] = (Argument)xC.Clone();
-                    continue;
-                } else {
+                } else
                     Shrink(points);
-                    continue;
-                }
             }
         }
 
@@ -106,7 +98,7 @@ public class SimplexMethod : IMinMethodND {
                 sw.WriteLine(coords[i]);
         }
 
-        Console.WriteLine($"f(min) = {function.Value(_min)}");
+        Console.WriteLine($"f(extremum) = {function.Value(_min)}");
     }
 
     private bool Criteria(Argument[] points, Argument xG, IFunction function) {
@@ -123,27 +115,27 @@ public class SimplexMethod : IMinMethodND {
             return false;
     }
 
-    private void Reflection(Argument[] points, Argument xG, Argument xR) {
+    private static void Reflection(Argument[] points, Argument xG, Argument xR) {
         for (int i = 0; i < xG.Number; i++)
             xR[i] = xG[i] - points[xG.Number][i] + xG[i];
     }
 
-    private void Expansion(Argument xG, Argument xR, Argument xE) {
+    private static void Expansion(Argument xG, Argument xR, Argument xE) {
         for (int i = 0; i < xG.Number; i++)
             xE[i] = xG[i] + 2 * (xR[i] - xG[i]);
     }
 
-    private void OutsideContraction(Argument xG, Argument xR, Argument xC) {
+    private static void OutsideContraction(Argument xG, Argument xR, Argument xC) {
         for (int i = 0; i < xG.Number; i++)
             xC[i] = xG[i] + 0.5 * (xR[i] - xG[i]);
     }
 
-    private void InsideContraction(Argument[] points, Argument xG, Argument xC) {
+    private static void InsideContraction(Argument[] points, Argument xG, Argument xC) {
         for (int i = 0; i < xG.Number; i++)
             xC[i] = xG[i] + 0.5 * (points[xG.Number][i] - xG[i]);
     }
 
-    private void Shrink(Argument[] points) {
+    private static void Shrink(Argument[] points) {
         for (int i = 1; i <= points[0].Number; i++)
             points[i] = (Argument)(points[0] + 0.5 * (points[i] - points[0])).Clone();
     }

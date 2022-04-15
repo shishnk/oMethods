@@ -21,12 +21,12 @@ public class BFGS : IMinMethodND {
         List<Argument> coords = new(); // для графики
         Matrix H = new(n);
         Matrix H1 = new(n);
-        Argument nextPoint = new(n);
+        Argument nextPoint;
         Argument direction = new(n); // вектор, определяющий направление
         Argument deltaF = new(n);
         Argument deltaF1 = new(n); // производные по n переменным(в нашем случае 2D)
-        Argument s = new(n); // $x_{k+1} - x_{k}$ - шаг алгоритма на итерации
-        Argument y = new(n); // изменение градиента на итерации
+        Argument s; // $x_{k+1} - x_{k}$ - шаг алгоритма на итерации
+        Argument y; // изменение градиента на итерации
 
         Argument denominatorAsVector;
         Argument numerator;
@@ -41,7 +41,7 @@ public class BFGS : IMinMethodND {
 
             denominatorAsNumber = 0;
 
-            if (iters % 2 == 0 && iters != 0) {
+            if (iters % 2 == n && iters != 0) {
                 H.Clear();
 
                 for (int i = 0; i < H.Size; i++)
@@ -56,11 +56,10 @@ public class BFGS : IMinMethodND {
                 break;
             }
 
-            for (int i = 0; i < H.Size; i++)
-                for (int j = 0; j < H.Size; j++)
-                    direction[i] += -H[i, j] * deltaF[j];
+            direction = -H * deltaF;
 
-            method.Compute(SearcherInterval.Search(function, 0, Eps, direction, initPoint), function, initPoint, direction);
+
+            method.Compute(SearcherInterval.Search(function, 0, Eps, direction, initPoint),function, initPoint, direction);
             lambda = method.Min;
             nextPoint = (Argument)(initPoint + lambda * direction).Clone();
 
@@ -108,15 +107,16 @@ public class BFGS : IMinMethodND {
 
         Console.WriteLine($"Iterations: {iters}");
         Console.WriteLine(JsonConvert.SerializeObject(_min));
-        Console.WriteLine($"f(min) = {function.Value(_min)}");
+        Console.WriteLine($"f(extremum) = {function.Value(_min)}");
 
-        using (var sw = new StreamWriter("coords.txt")) {
+        var sw = new StreamWriter("coords.txt");
+        using(sw) {
             for (int i = 0; i < coords.Count; i++)
                 sw.WriteLine(coords[i]);
         }
     }
 
-    private double Norm(Argument arg) {
+    private static double Norm(Argument arg) {
         double result = 0;
 
         for (int i = 0; i < arg.Number; i++) {
@@ -126,7 +126,7 @@ public class BFGS : IMinMethodND {
         return Math.Sqrt(result);
     }
 
-    private double Derivative(Argument point, IFunction function, int numberVariable, double h) {
+    private static double Derivative(Argument point, IFunction function, int numberVariable, double h) {
         Argument arg = new(point.Number);
         arg[numberVariable] = h;
 
