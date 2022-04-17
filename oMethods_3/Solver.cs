@@ -5,6 +5,13 @@ public enum MethodTypes {
     InteriorPoint
 }
 
+public enum StrategyTypes {
+    Increment,
+    Multiply,
+    Decrement,
+    Division,
+}
+
 public class Solver {
     public class SolverBuilder {
         private readonly Solver _solver = new();
@@ -30,12 +37,12 @@ public class Solver {
         }
 
         public SolverBuilder SetMethodType(MethodTypes type) {
-            _solver._type = type;
+            _solver._methodType = type;
             return this;
         }
 
-        public SolverBuilder SetPenaltyCoef(double coef) {
-            _solver._coef = coef;
+        public SolverBuilder SetStrategyType(StrategyTypes type) {
+            _solver._strategyType = type;
             return this;
         }
 
@@ -47,8 +54,8 @@ public class Solver {
     private IMinMethodND _methodND = default!;
     private IMinMethod1D _method1D = default!;
     private Argument _initPoint = default!;
-    private MethodTypes _type;
-    private double _coef;
+    private MethodTypes _methodType;
+    private StrategyTypes _strategyType;
 
     public void Compute() {
         try {
@@ -66,7 +73,7 @@ public class Solver {
             if (!_function.Limitation(_initPoint))
                 throw new Exception("The starting point does not satisfy the limitation of the function");
 
-            _methodND.Compute(_initPoint, _function, _method1D, _type, _coef);
+            _methodND.Compute(_initPoint, _function, _method1D, _methodType, _strategyType);
 
         } catch (Exception ex) {
             Console.WriteLine($"We had problem: {ex.Message}");
