@@ -30,7 +30,7 @@ public class GaussAlgorithm : IMinMethodND {
 
         nextPoint = (Argument)initPoint.Clone();
 
-        for (iters = 1; iters < MaxIters; iters++) {
+        for (iters = 0; iters < MaxIters; iters++) {
             for (int i = 0; i < initPoint.Number; i++) {
                 direction.Fill(0);
                 direction[i] = 1;
@@ -39,7 +39,10 @@ public class GaussAlgorithm : IMinMethodND {
                 nextPoint[i] = initPoint[i] + method.Min!.Value;
             }
 
-            if (function.PenaltyValue(nextPoint) < Eps) {
+            if (function.PenaltyValue(nextPoint) < Eps &&
+                function.Value(nextPoint) + function.PenaltyValue(nextPoint) -
+                (function.Value(initPoint) + function.PenaltyValue(initPoint)) < Eps) {
+
                 _min = (Argument)nextPoint.Clone();
                 break;
             }
@@ -80,6 +83,7 @@ public class SimplexMethod : IMinMethodND {
 
     public void Compute(Argument initPoint, IFunction function, IMinMethod1D method,
                         MethodTypes methodType, StrategyTypes strategyType) {
+
         Argument[] points = new Argument[initPoint.Number + 1];
 
         int iters;
@@ -108,43 +112,56 @@ public class SimplexMethod : IMinMethodND {
             }
 
         for (iters = 0; iters < MaxIters; iters++) {
-            points = points.OrderBy(point => function.Value(point)).ToArray();
+            points = points.OrderBy(point => function.Value(point) + function.PenaltyValue(point)).ToArray();
             xG.Fill(0);
 
             for (int i = 0; i < n; i++)
                 for (int j = 0; j < n; j++)
                     xG[i] += points[j][i] / n;
 
-            if (Criteria(points, xG, function)) {
+            if (Criteria(points, xG, function) && function.PenaltyValue(points[0]) < Eps) {
                 _min = points[0];
                 break;
             }
 
+            if (iters != 0) {
+
+                function.Coef = strategyType switch {
+                    StrategyTypes.Multiply => function.Coef *= 2,
+                    StrategyTypes.Increment => function.Coef++,
+
+                    _ => throw new ArgumentOutOfRangeException(nameof(strategyType),
+                        $"This type of coefficient change strategy does not exist: {strategyType}")
+                };
+            }
+
             Reflection(points, xG, xR);
 
-            double value = function.Value(xR);
+            double valueXR = function.Value(xR) + function.PenaltyValue(xR);
+            double valueBestPoint = function.Value(points[0]) + function.PenaltyValue(points[0]);
+            double valueN = function.Value(points[n]) + function.PenaltyValue(points[n]);
 
-            if (function.Value(points[0]) <= value
-                && value < function.Value(points[n - 1])) {
+            if (valueBestPoint <= valueXR
+                && valueXR < function.Value(points[n - 1]) + function.PenaltyValue(points[n - 1])) {
                 points[n] = (Argument)xR.Clone();
-            } else if (function.Value(xR) < function.Value(points[0])) {
+            } else if (valueXR < valueBestPoint) {
                 Expansion(xG, xR, xE);
 
-                if (function.Value(xE) < value) {
+                if (function.Value(xE) + function.PenaltyValue(xE) < valueXR) {
                     points[n] = (Argument)xE.Clone();
                 } else
                     points[n] = (Argument)xR.Clone();
-            } else if (value < function.Value(points[n])) {
+            } else if (valueXR < valueN) {
                 OutsideContraction(xG, xR, xC);
 
-                if (function.Value(xC) < value) {
+                if (function.Value(xC) + function.PenaltyValue(xC) < valueXR) {
                     points[n] = (Argument)xC.Clone();
                 } else
                     Shrink(points);
             } else {
                 InsideContraction(points, xG, xC);
 
-                if (function.Value(xC) < function.Value(points[n])) {
+                if (function.Value(xC) + function.PenaltyValue(xC) < valueN) {
                     points[n] = (Argument)xC.Clone();
                 } else
                     Shrink(points);
@@ -160,8 +177,10 @@ public class SimplexMethod : IMinMethodND {
         double sum = 0;
 
         for (int i = 0; i < xG.Number + 1; i++) {
-            sum += (function.Value(points[i]) - function.Value(xG)) *
-                   (function.Value(points[i]) - function.Value(xG));
+            sum += (function.Value(points[i]) +
+                    function.PenaltyValue(points[i]) - (function.Value(xG) + function.PenaltyValue(xG))) *
+                   (function.Value(points[i]) + function.PenaltyValue(points[i]) -
+                   (function.Value(xG) + function.PenaltyValue(xG)));
         }
 
         if (Math.Sqrt(sum / (xG.Number + 1)) < Eps)
