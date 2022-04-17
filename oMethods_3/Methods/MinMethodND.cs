@@ -6,7 +6,8 @@ public interface IMinMethodND {
     public double Eps { get; init; }
     public bool Need1DSearch { get; }
 
-    public void Compute(Argument initPoint, IFunction function, IMinMethod1D method, MethodTypes type, double coef);
+    public void Compute(Argument initPoint, IFunction function, IMinMethod1D method,
+                        MethodTypes methodType, StrategyTypes strategyType);
 }
 
 public class GaussAlgorithm : IMinMethodND {
@@ -21,31 +22,37 @@ public class GaussAlgorithm : IMinMethodND {
         Eps = eps;
     }
 
-    public void Compute(Argument initPoint, IFunction function, IMinMethod1D method, MethodTypes type, double coef) {
-        List<Argument> coords = new();
+    public void Compute(Argument initPoint, IFunction function, IMinMethod1D method,
+                        MethodTypes methodType, StrategyTypes strategyType) {
         Argument direction = new(initPoint.Number);
         Argument nextPoint;
         int iters;
 
         nextPoint = (Argument)initPoint.Clone();
-        coords.Add(initPoint);
 
-        for (iters = 0; iters < MaxIters; iters++) {
+        for (iters = 1; iters < MaxIters; iters++) {
             for (int i = 0; i < initPoint.Number; i++) {
                 direction.Fill(0);
                 direction[i] = 1;
-                method.Compute(SearcherInterval.Search(function, 0, Eps, direction, nextPoint), function, nextPoint, direction);
+                method.Compute(SearcherInterval.Search(function, 0, Eps, direction, nextPoint),
+                               function, nextPoint, direction);
                 nextPoint[i] = initPoint[i] + method.Min!.Value;
             }
 
-            coords.Add((Argument)nextPoint.Clone());
-
-            if (Math.Abs(function.Value(nextPoint) - function.Value(initPoint)) < Eps || (nextPoint - initPoint).Norm() < Eps) {
+            if (function.PenaltyValue(nextPoint) < Eps) {
                 _min = (Argument)nextPoint.Clone();
                 break;
             }
 
             initPoint = (Argument)nextPoint.Clone();
+
+            function.Coef = strategyType switch {
+                StrategyTypes.Multiply => function.Coef *= 2,
+                StrategyTypes.Increment => function.Coef++,
+
+                _ => throw new ArgumentOutOfRangeException(nameof(strategyType),
+                    $"This type of coefficient change strategy does not exist: {strategyType}")
+            };
         }
 
         if (iters == MaxIters)
@@ -53,13 +60,6 @@ public class GaussAlgorithm : IMinMethodND {
 
         Console.WriteLine($"Iterations: {iters}");
         Console.WriteLine(JsonConvert.SerializeObject(_min));
-
-        var sw = new StreamWriter("coords.txt");
-        using(sw) {
-            for (int i = 0; i < coords.Count; i++)
-                sw.WriteLine(coords[i]);
-        }
-
         Console.WriteLine($"f(extremum) = {function.Value(_min!)}");
     }
 }
@@ -78,8 +78,8 @@ public class SimplexMethod : IMinMethodND {
         Eps = eps;
     }
 
-    public void Compute(Argument initPoint, IFunction function, IMinMethod1D method, MethodTypes type, double coef) {
-        List<Argument> coords = new();  // for graphics
+    public void Compute(Argument initPoint, IFunction function, IMinMethod1D method,
+                        MethodTypes methodType, StrategyTypes strategyType) {
         Argument[] points = new Argument[initPoint.Number + 1];
 
         int iters;
@@ -91,7 +91,7 @@ public class SimplexMethod : IMinMethodND {
         Argument xE = new(n);
 
         double d1 = Step * (Math.Sqrt(n + 1) + n - 1) / (n * Math.Sqrt(2));
-        double d2 = Step / ((n * Math.Sqrt(2)) * (Math.Sqrt(n + 1) - 1));
+        double d2 = Step / (n * Math.Sqrt(2) * (Math.Sqrt(n + 1) - 1));
 
         points[2] = (Argument)initPoint.Clone();
         points[0] = new(n);
@@ -107,11 +107,8 @@ public class SimplexMethod : IMinMethodND {
                 points[i][j] = d2;
             }
 
-        coords.Add(initPoint);
-
         for (iters = 0; iters < MaxIters; iters++) {
             points = points.OrderBy(point => function.Value(point)).ToArray();
-            coords.Add(points[0]);
             xG.Fill(0);
 
             for (int i = 0; i < n; i++)
@@ -156,12 +153,6 @@ public class SimplexMethod : IMinMethodND {
 
         Console.WriteLine($"Iterations: {iters}");
         Console.WriteLine(JsonConvert.SerializeObject(_min = points[0]));
-
-        using (var sw = new StreamWriter("coords.txt")) {
-            for (int i = 0; i < coords.Count; i++)
-                sw.WriteLine(coords[i]);
-        }
-
         Console.WriteLine($"f(extremum) = {function.Value(_min)}");
     }
 
