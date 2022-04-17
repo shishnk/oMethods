@@ -66,17 +66,6 @@ public class Argument : ICloneable {
             Variables[i] = value;
     }
 
-    public override string ToString() { // для отрисовки графиков
-        string result = string.Empty;
-
-        for (int i = 0; i < Number; i++) {
-            result += Variables[i];
-            result += " ";
-        }
-
-        return result;
-    }
-
     public double Norm() {
         double result = 0.0;
 
