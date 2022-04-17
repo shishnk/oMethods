@@ -23,8 +23,8 @@ public class Fibonacci : IMinMethod1D {
 
         double x1 = interval.Left + Fib(n) / Fib(n + 2) * (interval.Right - interval.Left);
         double x2 = interval.Left + Fib(n + 1) / Fib(n + 2) * (interval.Right - interval.Left);
-        double y1 = function.Value(argument + x1 * direction);
-        double y2 = function.Value(argument + x2 * direction);
+        double y1 = function.Value(argument + x1 * direction) + function.PenaltyValue(argument + x1 * direction);
+        double y2 = function.Value(argument + x2 * direction) + function.PenaltyValue(argument + x2 * direction);
 
         for (int k = 1; k < n; k++) {
             if (y1 < y2) {
@@ -32,13 +32,13 @@ public class Fibonacci : IMinMethod1D {
                 x2 = x1;
                 y2 = y1;
                 x1 = interval.Left + Fib(n - k + 1) / Fib(n - k + 3) * (interval.Right - interval.Left);
-                y1 = function.Value(argument + x1 * direction);
+                y1 = function.Value(argument + x1 * direction) + function.PenaltyValue(argument + x1 * direction);
             } else {
                 interval = new(x1, interval.Right);
                 x1 = x2;
                 y1 = y2;
                 x2 = interval.Left + Fib(n - k + 2) / Fib(n - k + 3) * (interval.Right - interval.Left);
-                y2 = function.Value(argument + x2 * direction);
+                y2 = function.Value(argument + x2 * direction) + function.PenaltyValue(argument + x2 * direction);
             }
         }
 
@@ -48,43 +48,4 @@ public class Fibonacci : IMinMethod1D {
     private static double Fib(int n)
         => (Math.Pow((1 + Math.Sqrt(5)) / 2, n) -
             Math.Pow((1 - Math.Sqrt(5)) / 2, n)) / Math.Sqrt(5);
-}
-
-public class QuadraticInterpolation : IMinMethod1D {
-    private double? _min;
-    public double? Min => _min;
-    public double Eps { get; init; }
-
-    public QuadraticInterpolation(double eps)
-        => Eps = eps;
-
-    public void Compute(Interval interval, IFunction function, Argument argument, Argument direction) {
-        double xk, x1, x2, b, c;
-        int iters;
-        double x0 = interval.Center;
-        double step = (interval.Right - interval.Left) / 2;
-
-        for (iters = 0; ; iters++) {
-            x1 = x0 - step;
-            x2 = x0 + step;
-
-            c = (function.Value(argument + x1 * direction) -
-                2 * function.Value(argument + x0 * direction) +
-                function.Value(argument + x2 * direction)) /
-                (2 * step * step);
-
-            b = (-function.Value(argument + x1 * direction) *
-                (2 * x0 + step) + 4 * function.Value(argument + x0 * direction) *
-                x0 - function.Value(argument + x2 * direction) *
-                (2 * x0 - step)) / (2 * step * step);
-
-            xk = -b / (2 * c);
-
-            if (Math.Abs(xk - x0) < Eps) {
-                _min = xk;
-                break;
-            } else
-                x0 = xk;
-        }
-    }
 }
