@@ -16,9 +16,14 @@ public class GaussAlgorithm : IMinMethodND {
     public double Eps { get; init; }
     public bool Need1DSearch => true;
 
+    // for report
+    public int Call { get; private set; }
+    //
+
     public GaussAlgorithm(int maxIters, double eps) {
         MaxIters = maxIters;
         Eps = eps;
+        Call = 0;
     }
 
     public void Compute(Argument initPoint, IFunction function, IMinMethod1D method, (StrategyTypes, double) strategy) {
@@ -36,6 +41,8 @@ public class GaussAlgorithm : IMinMethodND {
                                function, nextPoint, direction);
                 nextPoint[i] = initPoint[i] + method.Min!.Value;
             }
+
+            Call += 2;
 
             if (function.PenaltyValue(nextPoint) < Eps &&
                 Math.Abs(function.Value(nextPoint) + function.PenaltyValue(nextPoint) -
@@ -59,6 +66,7 @@ public class GaussAlgorithm : IMinMethodND {
         if (iters == MaxIters)
             _min = (Argument)nextPoint.Clone();
 
+        Console.WriteLine($"Evaluation: {Call + method.Call + SearcherInterval.Call}");
         Console.WriteLine($"Iterations: {iters}");
         Console.WriteLine(JsonConvert.SerializeObject(_min));
         Console.WriteLine($"f(extremum) = {function.Value(_min!)}");
@@ -73,10 +81,15 @@ public class SimplexMethod : IMinMethodND {
     public double Step { get; init; }
     public double Eps { get; init; }
 
+    // for report
+    public int Call { get; private set; }
+    //
+
     public SimplexMethod(int maxIters, double step, double eps) {
         MaxIters = maxIters;
         Step = step;
         Eps = eps;
+        Call = 0;
     }
 
     public void Compute(Argument initPoint, IFunction function, IMinMethod1D method, (StrategyTypes, double) strategy) {
@@ -94,9 +107,10 @@ public class SimplexMethod : IMinMethodND {
         double d1 = Step * (Math.Sqrt(n + 1) + n - 1) / (n * Math.Sqrt(2));
         double d2 = Step / (n * Math.Sqrt(2) * (Math.Sqrt(n + 1) - 1));
 
-        points[2] = (Argument)initPoint.Clone();
-        points[0] = new(n);
-        points[1] = new(n);
+        points[^1] = (Argument)initPoint.Clone();
+
+        for (int i = 0; i < points.Length - 1; i++)
+            points[i] = new(n);
 
         for (int i = 0; i < n; i++)
             for (int j = 0; j < n; j++) {
@@ -111,6 +125,8 @@ public class SimplexMethod : IMinMethodND {
         for (iters = 0; iters < MaxIters; iters++) {
             points = points.OrderBy(point => function.Value(point) + function.PenaltyValue(point)).ToArray();
             xG.Fill(0);
+
+            Call += n + 1;
 
             for (int i = 0; i < n; i++)
                 for (int j = 0; j < n; j++)
@@ -138,14 +154,20 @@ public class SimplexMethod : IMinMethodND {
             double valueBestPoint = function.Value(points[0]) + function.PenaltyValue(points[0]);
             double valueN = function.Value(points[n]) + function.PenaltyValue(points[n]);
 
+            Call += 3;
+
             if (valueBestPoint <= valueXR
                 && valueXR < function.Value(points[n - 1]) + function.PenaltyValue(points[n - 1])) {
                 points[n] = (Argument)xR.Clone();
+
+                Call++;
             } else if (valueXR < valueBestPoint) {
                 Expansion(xG, xR, xE);
 
                 if (function.Value(xE) + function.PenaltyValue(xE) < valueXR) {
                     points[n] = (Argument)xE.Clone();
+
+                    Call++;
                 } else
                     points[n] = (Argument)xR.Clone();
             } else if (valueXR < valueN) {
@@ -153,6 +175,8 @@ public class SimplexMethod : IMinMethodND {
 
                 if (function.Value(xC) + function.PenaltyValue(xC) < valueXR) {
                     points[n] = (Argument)xC.Clone();
+
+                    Call++;
                 } else
                     Shrink(points);
             } else {
@@ -160,11 +184,14 @@ public class SimplexMethod : IMinMethodND {
 
                 if (function.Value(xC) + function.PenaltyValue(xC) < valueN) {
                     points[n] = (Argument)xC.Clone();
+
+                    Call++;
                 } else
                     Shrink(points);
             }
         }
 
+        Console.WriteLine($"Evaluation: {Call}");
         Console.WriteLine($"Iterations: {iters}");
         Console.WriteLine(JsonConvert.SerializeObject(_min = points[0]));
         Console.WriteLine($"f(extremum) = {function.Value(_min)}");
@@ -172,12 +199,17 @@ public class SimplexMethod : IMinMethodND {
 
     private bool Criteria(Argument[] points, Argument xG, IFunction function) {
         double sum = 0;
+        double valueXG = function.Value(xG) + function.PenaltyValue(xG);
+
+        Call++;
 
         for (int i = 0; i < xG.Number + 1; i++) {
             sum += (function.Value(points[i]) +
-                    function.PenaltyValue(points[i]) - (function.Value(xG) + function.PenaltyValue(xG))) *
+                    function.PenaltyValue(points[i]) - valueXG) *
                    (function.Value(points[i]) + function.PenaltyValue(points[i]) -
-                   (function.Value(xG) + function.PenaltyValue(xG)));
+                   valueXG);
+
+            Call += (xG.Number + 1) * 2;
         }
 
         if (Math.Sqrt(sum / (xG.Number + 1)) < Eps)
