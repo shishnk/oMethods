@@ -6,7 +6,7 @@ public interface IMinMethodND {
     public double Eps { get; init; }
     public bool Need1DSearch { get; }
 
-    public void Compute(Argument initPoint, IFunction function, IMinMethod1D method, (StrategyTypes, double) strategy);
+    public void Compute(Argument initPoint, IFunction function, IMinMethod1D method, (StrategyTypes, double)? strategy);
 }
 
 public class GaussAlgorithm : IMinMethodND {
@@ -26,7 +26,7 @@ public class GaussAlgorithm : IMinMethodND {
         Call = 0;
     }
 
-    public void Compute(Argument initPoint, IFunction function, IMinMethod1D method, (StrategyTypes, double) strategy) {
+    public void Compute(Argument initPoint, IFunction function, IMinMethod1D method, (StrategyTypes, double)? strategy) {
         Argument direction = new(initPoint.Number);
         Argument nextPoint;
         int iters;
@@ -54,13 +54,15 @@ public class GaussAlgorithm : IMinMethodND {
 
             initPoint = (Argument)nextPoint.Clone();
 
-            function.Coef = strategy.Item1 switch {
-                StrategyTypes.Mult => function.Coef *= strategy.Item2,
-                StrategyTypes.Add => function.Coef += strategy.Item2,
-                StrategyTypes.Div => function.Coef /= strategy.Item2,
+            if (strategy is not null) {
+                function.Coef = strategy.Value.Item1 switch {
+                    StrategyTypes.Mult => function.Coef *= strategy.Value.Item2,
+                    StrategyTypes.Add => function.Coef += strategy.Value.Item2,
+                    StrategyTypes.Div => function.Coef /= strategy.Value.Item2,
 
-                _ => throw new InvalidEnumArgumentException($"This type of coefficient change strategy does not exist: {nameof(strategy.Item1)}")
-            };
+                    _ => throw new InvalidEnumArgumentException($"This type of coefficient change strategy does not exist: {nameof(strategy.Value.Item1)}")
+                };
+            }
         }
 
         if (iters == MaxIters)
@@ -92,7 +94,7 @@ public class SimplexMethod : IMinMethodND {
         Call = 0;
     }
 
-    public void Compute(Argument initPoint, IFunction function, IMinMethod1D method, (StrategyTypes, double) strategy) {
+    public void Compute(Argument initPoint, IFunction function, IMinMethod1D method, (StrategyTypes, double)? strategy) {
 
         Argument[] points = new Argument[initPoint.Number + 1];
 
@@ -138,14 +140,15 @@ public class SimplexMethod : IMinMethodND {
             }
 
             if (iters != 0) {
+                if (strategy is not null) {
+                    function.Coef = strategy.Value.Item1 switch {
+                        StrategyTypes.Mult => function.Coef *= strategy.Value.Item2,
+                        StrategyTypes.Add => function.Coef += strategy.Value.Item2,
+                        StrategyTypes.Div => function.Coef /= strategy.Value.Item2,
 
-                function.Coef = strategy.Item1 switch {
-                    StrategyTypes.Mult => function.Coef *= strategy.Item2,
-                    StrategyTypes.Add => function.Coef += strategy.Item2,
-                    StrategyTypes.Div => function.Coef /= strategy.Item2,
-
-                    _ => throw new InvalidEnumArgumentException($"This type of coefficient change strategy does not exist: {nameof(strategy.Item1)}")
-                };
+                        _ => throw new InvalidEnumArgumentException($"This type of coefficient change strategy does not exist: {nameof(strategy.Value.Item1)}")
+                    };
+                }
             }
 
             Reflection(points, xG, xR);
