@@ -6,8 +6,7 @@ public interface IMinMethodND {
     public double Eps { get; init; }
     public bool Need1DSearch { get; }
 
-    public void Compute(Argument initPoint, IFunction function, IMinMethod1D method,
-                        MethodTypes methodType, StrategyTypes strategyType);
+    public void Compute(Argument initPoint, IFunction function, IMinMethod1D method, (StrategyTypes, double) strategy);
 }
 
 public class GaussAlgorithm : IMinMethodND {
@@ -22,8 +21,7 @@ public class GaussAlgorithm : IMinMethodND {
         Eps = eps;
     }
 
-    public void Compute(Argument initPoint, IFunction function, IMinMethod1D method,
-                        MethodTypes methodType, StrategyTypes strategyType) {
+    public void Compute(Argument initPoint, IFunction function, IMinMethod1D method, (StrategyTypes, double) strategy) {
         Argument direction = new(initPoint.Number);
         Argument nextPoint;
         int iters;
@@ -41,7 +39,8 @@ public class GaussAlgorithm : IMinMethodND {
 
             if (function.PenaltyValue(nextPoint) < Eps &&
                 function.Value(nextPoint) + function.PenaltyValue(nextPoint) -
-                (function.Value(initPoint) + function.PenaltyValue(initPoint)) < Eps) {
+                (function.Value(initPoint) + function.PenaltyValue(initPoint)) < Eps &&
+                (nextPoint - initPoint).Norm() < Eps) {
 
                 _min = (Argument)nextPoint.Clone();
                 break;
@@ -49,14 +48,17 @@ public class GaussAlgorithm : IMinMethodND {
 
             initPoint = (Argument)nextPoint.Clone();
 
-            function.Coef = strategyType switch {
-                StrategyTypes.Multiply => function.Coef *= 2,
-                StrategyTypes.Increment => function.Coef++,
+            function.Coef = strategy.Item1 switch {
+                StrategyTypes.Mult => function.Coef *= strategy.Item2,
+                StrategyTypes.Add => function.Coef += strategy.Item2,
+                StrategyTypes.Div => function.Coef /= strategy.Item2,
+                StrategyTypes.Sub => function.Coef -= strategy.Item2,
 
-                _ => throw new ArgumentOutOfRangeException(nameof(strategyType),
-                    $"This type of coefficient change strategy does not exist: {strategyType}")
+                _ => throw new InvalidEnumArgumentException($"This type of coefficient change strategy does not exist: {nameof(strategy.Item1)}")
             };
         }
+
+
 
         if (iters == MaxIters)
             _min = (Argument)nextPoint.Clone();
@@ -81,8 +83,7 @@ public class SimplexMethod : IMinMethodND {
         Eps = eps;
     }
 
-    public void Compute(Argument initPoint, IFunction function, IMinMethod1D method,
-                        MethodTypes methodType, StrategyTypes strategyType) {
+    public void Compute(Argument initPoint, IFunction function, IMinMethod1D method, (StrategyTypes, double) strategy) {
 
         Argument[] points = new Argument[initPoint.Number + 1];
 
@@ -126,12 +127,13 @@ public class SimplexMethod : IMinMethodND {
 
             if (iters != 0) {
 
-                function.Coef = strategyType switch {
-                    StrategyTypes.Multiply => function.Coef *= 2,
-                    StrategyTypes.Increment => function.Coef++,
+                function.Coef = strategy.Item1 switch {
+                    StrategyTypes.Mult => function.Coef *= strategy.Item2,
+                    StrategyTypes.Add => function.Coef += strategy.Item2,
+                    StrategyTypes.Div => function.Coef /= strategy.Item2,
+                    StrategyTypes.Sub => function.Coef -= strategy.Item2,
 
-                    _ => throw new ArgumentOutOfRangeException(nameof(strategyType),
-                        $"This type of coefficient change strategy does not exist: {strategyType}")
+                    _ => throw new InvalidEnumArgumentException($"This type of coefficient change strategy does not exist: {nameof(strategy.Item1)}")
                 };
             }
 
