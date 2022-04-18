@@ -26,7 +26,7 @@ public class FunctionA : IFunction {
 
         MethodTypes.InteriorPointLog => -Coef * Math.Log(arg[0] + arg[1] - 1),
 
-        // MethodTypes.InteriorPointReverse =>  Coef / (arg[0] + arg[1] - 1), // TODO
+        MethodTypes.InteriorPointReverse =>  -Coef / (-arg[0] - arg[1] + 1),
 
         _ => throw new InvalidEnumArgumentException($"This type of method does not exist: {nameof(MethodType)}")
     };
