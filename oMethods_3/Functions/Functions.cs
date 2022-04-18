@@ -24,9 +24,10 @@ public class FunctionA : IFunction {
     public double PenaltyValue(Argument arg) => MethodType switch {
         MethodTypes.Penalty => Coef * Math.Pow(0.5 * (-arg[0] - arg[1] + 1 + Math.Abs(-arg[0] - arg[1] + 1)), Degree!.Value),
 
-        MethodTypes.InteriorPointLog => -Coef * Math.Log(arg[0] + arg[1] - 1),
+        MethodTypes.InteriorPointLog => (-Coef * Math.Log(arg[0] + arg[1] - 1)).Equals(Double.NaN) ? 0
+                                        : -Coef * Math.Log(arg[0] + arg[1] - 1),
 
-        MethodTypes.InteriorPointReverse =>  -Coef / (-arg[0] - arg[1] + 1),
+        MethodTypes.InteriorPointReverse => -Coef / (-arg[0] - arg[1] + 1),
 
         _ => throw new InvalidEnumArgumentException($"This type of method does not exist: {nameof(MethodType)}")
     };
