@@ -1,7 +1,12 @@
 ﻿using oMethods_3;
 
-Solver solver = Solver.CreateBuilder().SetPoint(Argument.ReadJson("point.json")!).
-SetFunction(new FunctionA(2, 1)).SetMinMethod(new GaussAlgorithm(10000, 1E-03)).
-SetMinMethod1D(new Fibonacci(1E-07)).SetStrategyType(StrategyTypes.Multiply);
+Solver solverWithGauss = Solver.CreateBuilder().SetPoint(Argument.ReadJson("point.json")!)
+.SetFunction(new FunctionA(2, 1, MethodTypes.InteriorPointReverse)).SetMinMethod(new GaussAlgorithm(1000, 1E-5))
+.SetMinMethod1D(new Fibonacci(1E-5)).SetStrategyType((StrategyTypes.Div, 0.5));
 
-solver.Compute();
+Solver solverWithSimplex = Solver.CreateBuilder().SetPoint(Argument.ReadJson("point.json")!)
+.SetFunction(new FunctionA(2, 1, MethodTypes.Penalty)).SetMinMethod(new SimplexMethod(1000, 1, 1E-4))
+.SetStrategyType((StrategyTypes.Mult, 2));
+
+solverWithGauss.Compute();
+solverWithSimplex.Compute();
