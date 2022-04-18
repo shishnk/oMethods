@@ -57,7 +57,7 @@ public class GaussAlgorithm : IMinMethodND {
             if (strategy is not null) {
                 function.Coef = strategy.Value.Item1 switch {
                     StrategyTypes.Mult => function.Coef *= strategy.Value.Item2,
-                    StrategyTypes.Add => function.Coef += strategy.Value.Item2,
+                    StrategyTypes.Add => function.Coef == 0 ? 0 : function.Coef += strategy.Value.Item2,
                     StrategyTypes.Div => function.Coef /= strategy.Value.Item2,
 
                     _ => throw new InvalidEnumArgumentException($"This type of coefficient change strategy does not exist: {nameof(strategy.Value.Item1)}")
@@ -143,7 +143,7 @@ public class SimplexMethod : IMinMethodND {
                 if (strategy is not null) {
                     function.Coef = strategy.Value.Item1 switch {
                         StrategyTypes.Mult => function.Coef *= strategy.Value.Item2,
-                        StrategyTypes.Add => function.Coef += strategy.Value.Item2,
+                        StrategyTypes.Add => function.Coef == 0 ? 0 : function.Coef += strategy.Value.Item2,
                         StrategyTypes.Div => function.Coef /= strategy.Value.Item2,
 
                         _ => throw new InvalidEnumArgumentException($"This type of coefficient change strategy does not exist: {nameof(strategy.Value.Item1)}")
