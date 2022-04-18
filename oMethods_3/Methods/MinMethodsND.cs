@@ -66,7 +66,7 @@ public class GaussAlgorithm : IMinMethodND {
         if (iters == MaxIters)
             _min = (Argument)nextPoint.Clone();
 
-        Console.WriteLine($"Evaluation: {Call + method.Call + SearcherInterval.Call}");
+        Console.WriteLine($"Function evaluations: {Call + method.Call + SearcherInterval.Call}");
         Console.WriteLine($"Iterations: {iters}");
         Console.WriteLine(JsonConvert.SerializeObject(_min));
         Console.WriteLine($"f(extremum) = {function.Value(_min!)}");
@@ -191,7 +191,7 @@ public class SimplexMethod : IMinMethodND {
             }
         }
 
-        Console.WriteLine($"Evaluation: {Call}");
+        Console.WriteLine($"Function evaluations: {Call}");
         Console.WriteLine($"Iterations: {iters}");
         Console.WriteLine(JsonConvert.SerializeObject(_min = points[0]));
         Console.WriteLine($"f(extremum) = {function.Value(_min)}");
