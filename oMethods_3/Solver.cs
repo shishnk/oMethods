@@ -49,7 +49,7 @@ public class Solver {
     private IMinMethodND _methodND = default!;
     private IMinMethod1D _method1D = default!;
     private Argument _initPoint = default!;
-    private (StrategyTypes, double) _strategy;
+    private (StrategyTypes, double)? _strategy;
 
     public void Compute() {
         try {
@@ -70,15 +70,18 @@ public class Solver {
             if (_function.Degree is null && _function.MethodType == MethodTypes.Penalty)
                 throw new Exception("When selecting the penalty function method, the value of the degree cannot be null");
 
-            if (_function.MethodType == MethodTypes.Penalty && _strategy.Item1 != StrategyTypes.Add && _strategy.Item1 != StrategyTypes.Mult)
+            if (_function.MethodType == MethodTypes.Penalty && _function.Coef != 0 && _strategy?.Item1 != StrategyTypes.Add && _strategy?.Item1 != StrategyTypes.Mult)
                 throw new Exception("With the chosen method of penalty functions, the strategy for changing the coefficient should be addition or multiplication");
 
             if ((_function.MethodType == MethodTypes.InteriorPointLog || _function.MethodType == MethodTypes.InteriorPointReverse) &&
-                _strategy.Item1 != StrategyTypes.Div)
+                _strategy?.Item1 != StrategyTypes.Div && _function.Coef != 0)
                 throw new Exception("With the chosen method of barrier functions, the strategy for changing the coefficient should be division");
 
             if (_function.MethodType == MethodTypes.Penalty && _function.Degree != 1 && (_function.Degree % 2 != 0 || _function.Degree == 0))
                 throw new Exception("The degree of the penalty function must be even or equal to one");
+
+            if (_function.Coef != 0 && _strategy is null)
+                throw new Exception("Need to choose a strategy to change the penalty coefficient");
 
             _methodND.Compute(_initPoint, _function, _method1D, _strategy);
 
