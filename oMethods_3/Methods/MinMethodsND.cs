@@ -38,9 +38,8 @@ public class GaussAlgorithm : IMinMethodND {
             }
 
             if (function.PenaltyValue(nextPoint) < Eps &&
-                function.Value(nextPoint) + function.PenaltyValue(nextPoint) -
-                (function.Value(initPoint) + function.PenaltyValue(initPoint)) < Eps &&
-                (nextPoint - initPoint).Norm() < Eps) {
+                Math.Abs(function.Value(nextPoint) + function.PenaltyValue(nextPoint) -
+                (function.Value(initPoint) + function.PenaltyValue(initPoint))) < Eps) {
 
                 _min = (Argument)nextPoint.Clone();
                 break;
@@ -52,13 +51,10 @@ public class GaussAlgorithm : IMinMethodND {
                 StrategyTypes.Mult => function.Coef *= strategy.Item2,
                 StrategyTypes.Add => function.Coef += strategy.Item2,
                 StrategyTypes.Div => function.Coef /= strategy.Item2,
-                StrategyTypes.Sub => function.Coef -= strategy.Item2,
 
                 _ => throw new InvalidEnumArgumentException($"This type of coefficient change strategy does not exist: {nameof(strategy.Item1)}")
             };
         }
-
-
 
         if (iters == MaxIters)
             _min = (Argument)nextPoint.Clone();
@@ -131,7 +127,6 @@ public class SimplexMethod : IMinMethodND {
                     StrategyTypes.Mult => function.Coef *= strategy.Item2,
                     StrategyTypes.Add => function.Coef += strategy.Item2,
                     StrategyTypes.Div => function.Coef /= strategy.Item2,
-                    StrategyTypes.Sub => function.Coef -= strategy.Item2,
 
                     _ => throw new InvalidEnumArgumentException($"This type of coefficient change strategy does not exist: {nameof(strategy.Item1)}")
                 };
