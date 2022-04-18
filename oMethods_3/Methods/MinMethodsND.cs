@@ -204,12 +204,12 @@ public class SimplexMethod : IMinMethodND {
         Call++;
 
         for (int i = 0; i < xG.Number + 1; i++) {
-            sum += (function.Value(points[i]) +
-                    function.PenaltyValue(points[i]) - valueXG) *
-                   (function.Value(points[i]) + function.PenaltyValue(points[i]) -
-                   valueXG);
+            double valuePoint = function.Value(points[i]) + function.PenaltyValue(points[i]);
 
-            Call += (xG.Number + 1) * 2;
+            sum += (valuePoint - valueXG) *
+                   (valuePoint - valueXG);
+
+            Call += xG.Number + 1;
         }
 
         if (Math.Sqrt(sum / (xG.Number + 1)) < Eps)
