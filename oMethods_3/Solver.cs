@@ -2,14 +2,14 @@ namespace oMethods_3;
 
 public enum MethodTypes {
     Penalty,
-    InteriorPoint
+    InteriorPointLog,
+    InteriorPointReverse
 }
 
 public enum StrategyTypes {
-    Increment,
-    Multiply,
-    Decrement,
-    Division,
+    Add,
+    Mult,
+    Div,
 }
 
 public class Solver {
@@ -36,13 +36,8 @@ public class Solver {
             return this;
         }
 
-        public SolverBuilder SetMethodType(MethodTypes type) {
-            _solver._methodType = type;
-            return this;
-        }
-
-        public SolverBuilder SetStrategyType(StrategyTypes type) {
-            _solver._strategyType = type;
+        public SolverBuilder SetStrategyType((StrategyTypes, double) strategy) {
+            _solver._strategy = strategy;
             return this;
         }
 
@@ -54,8 +49,7 @@ public class Solver {
     private IMinMethodND _methodND = default!;
     private IMinMethod1D _method1D = default!;
     private Argument _initPoint = default!;
-    private MethodTypes _methodType;
-    private StrategyTypes _strategyType;
+    private (StrategyTypes, double) _strategy;
 
     public void Compute() {
         try {
@@ -73,7 +67,20 @@ public class Solver {
             if (!_function.Limitation(_initPoint))
                 throw new Exception("The starting point does not satisfy the limitation of the function");
 
-            _methodND.Compute(_initPoint, _function, _method1D, _methodType, _strategyType);
+            if (_function.Degree is null && _function.MethodType == MethodTypes.Penalty)
+                throw new Exception("When selecting the penalty function method, the value of the degree cannot be null");
+
+            if (_function.MethodType == MethodTypes.Penalty && _strategy.Item1 != StrategyTypes.Add && _strategy.Item1 != StrategyTypes.Mult)
+                throw new Exception("With the chosen method of penalty functions, the strategy for changing the coefficient should be addition or multiplication");
+
+            if ((_function.MethodType == MethodTypes.InteriorPointLog || _function.MethodType == MethodTypes.InteriorPointReverse) &&
+                _strategy.Item1 != StrategyTypes.Div)
+                throw new Exception("With the chosen method of barrier functions, the strategy for changing the coefficient should be division");
+
+            if (_function.MethodType == MethodTypes.Penalty && _function.Degree != 1 && (_function.Degree % 2 != 0 || _function.Degree == 0))
+                throw new Exception("The degree of the penalty function must be even or equal to one");
+
+            _methodND.Compute(_initPoint, _function, _method1D, _strategy);
 
         } catch (Exception ex) {
             Console.WriteLine($"We had problem: {ex.Message}");
