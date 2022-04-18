@@ -209,7 +209,7 @@ public class SimplexMethod : IMinMethodND {
             sum += (valuePoint - valueXG) *
                    (valuePoint - valueXG);
 
-            Call += xG.Number + 1;
+            Call++;
         }
 
         if (Math.Sqrt(sum / (xG.Number + 1)) < Eps)
