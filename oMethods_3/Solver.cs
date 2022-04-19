@@ -83,6 +83,12 @@ public class Solver {
             if (_function.Coef != 0 && _strategy is null)
                 throw new Exception("Need to choose a strategy to change the penalty coefficient");
 
+            if ((_strategy?.Item1 == StrategyTypes.Mult || _strategy?.Item1 == StrategyTypes.Add) && _strategy?.Item2 < 1)
+                throw new Exception("With this strategy, the coefficient of change should be > 1");
+
+            if (_strategy?.Item1 == StrategyTypes.Div && _strategy?.Item2 < 1)
+                throw new Exception("With this strategy, the coefficient of change should be > 1");
+
             _methodND.Compute(_initPoint, _function, _method1D, _strategy);
 
         } catch (Exception ex) {
