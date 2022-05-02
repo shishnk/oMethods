@@ -21,19 +21,35 @@ public class FunctionA : IFunction {
         => 5 * (arg[0] + arg[1]) * (arg[0] + arg[1]) +
            (arg[0] - 2) * (arg[0] - 2);
 
-    public double PenaltyValue(Argument arg) => MethodType switch {
-        MethodTypes.Penalty => Coef * Math.Pow(0.5 * (-arg[0] - arg[1] + 1 + Math.Abs(-arg[0] - arg[1] + 1)), Degree!.Value),
+    // public double PenaltyValue(Argument arg) => MethodType switch {
+    //     MethodTypes.Penalty => Coef * Math.Pow(0.5 * (-arg[0] - arg[1] + 1 + Math.Abs(-arg[0] - arg[1] + 1)), Degree!.Value),
 
-        MethodTypes.InteriorPointLog => (-Coef * Math.Log(arg[0] + arg[1] - 1)).Equals(Double.NaN) ? 0
-                                        : -Coef * Math.Log(arg[0] + arg[1] - 1),
+    //     MethodTypes.InteriorPointLog => (-Coef * Math.Log(arg[0] + arg[1] - 1)).Equals(Double.NaN) ? 0
+    //                                     : -Coef * Math.Log(arg[0] + arg[1] - 1),
 
-        MethodTypes.InteriorPointReverse => -Coef / (-arg[0] - arg[1] + 1),
+    //     MethodTypes.InteriorPointReverse => -Coef / (arg[0] + arg[1] - 1),
 
-        _ => throw new InvalidEnumArgumentException($"This type of method does not exist: {nameof(MethodType)}")
-    };
+    //     _ => throw new InvalidEnumArgumentException($"This type of method does not exist: {nameof(MethodType)}")
+    // };
+
+    public double PenaltyValue(Argument arg) {
+        switch (MethodType) {
+            case MethodTypes.InteriorPointLog:
+                // Console.WriteLine($"ValuePenaltyFunction={Math.Log(arg[0] + arg[1] - 1)}");
+                return -Coef * Math.Log(arg[0] + arg[1] - 1);
+            case MethodTypes.InteriorPointReverse:
+                // Console.WriteLine($"ValuePenaltyFunction={-1.0 / (-arg[0] - arg[1] + 1)}");
+                return -Coef / (-arg[0] - arg[1] + 1);
+            case MethodTypes.Penalty:
+                return Coef * Math.Pow(0.5 * (-arg[0] - arg[1] + 1 + Math.Abs(-arg[0] - arg[1] + 1)), Degree!.Value);
+            default:
+                return 0;
+        }
+
+    }
 
     public bool Limitation(Argument arg)
-        => -arg[0] - arg[1] + 1 < 0;
+        => -arg[0] - arg[1] + 1 <= 0;
 }
 
 public class FunctionB : IFunction {
