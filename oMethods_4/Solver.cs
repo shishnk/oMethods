@@ -29,6 +29,15 @@ public class Solver {
 
     public void Compute() {
         try {
+            ArgumentNullException.ThrowIfNull(_function,
+                                              $"{nameof(_function)} cannot be null, set the function");
+
+             ArgumentNullException.ThrowIfNull(_rectangle,
+                                              $"{nameof(_rectangle)} cannot be null, set the area");
+
+            ArgumentNullException.ThrowIfNull(_method,
+                                              $"{nameof(_method)} cannot be null, set the method of minimization");
+
             _method.Compute(_rectangle, _function);
         } catch (Exception ex) {
             Console.WriteLine($"We had problem: {ex.Message}");
