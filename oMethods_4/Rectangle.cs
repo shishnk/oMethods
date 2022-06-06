@@ -25,6 +25,9 @@ public readonly record struct Rectangle {
         Square = LeftTop.Distance(rightTop) * leftBottom.Distance(RightBottom);
     }
 
+    public bool Inside(Vector2D point)
+        => point.X >= LeftBottom.X && point.X <= RightBottom.X && point.Y >= LeftBottom.Y && point.Y <= LeftTop.Y;
+
     public static Rectangle? ReadJson(string jsonPath) {
         try {
             if (!File.Exists(jsonPath))
