@@ -42,33 +42,30 @@ public class AlgorithmB : ISearchMethod2D {
         IMinMethod2D simplexMethod = new SimplexMethod(1000, 1.0, Eps);
         Vector2D point;
 
-        double newX = new Random().NextDouble(rectangle.LeftBottom.X, rectangle.RightBottom.X);
-        double newY = new Random().NextDouble(rectangle.LeftBottom.Y, rectangle.LeftTop.Y);
-
         double temp;
 
-        simplexMethod.Compute(function, new(newX, newY));
-        _min = simplexMethod.Min;
+        _min = new(0.0, 0.0);
 
         double functionValue = function.Value(_min!.Value);
 
         for (int i = 0; i < Trying; i++) {
-            do {
-                newX = new Random().NextDouble(rectangle.LeftBottom.X, rectangle.RightBottom.X);
-                newY = new Random().NextDouble(rectangle.LeftBottom.Y, rectangle.LeftTop.Y);
-                point = new(newX, newY);
-            } while ((temp = function.Value(point)) >= functionValue);
-
-            _min = point;
-            functionValue = temp;
-
-            newX = new Random().NextDouble(rectangle.LeftBottom.X, rectangle.RightBottom.X);
-            newY = new Random().NextDouble(rectangle.LeftBottom.Y, rectangle.LeftTop.Y);
-
-            simplexMethod.Compute(function, new(newX, newY));
+            int index = 0;
+            simplexMethod.Compute(function, _min.Value);
 
             if ((temp = function.Value(simplexMethod.Min!.Value)) < functionValue) {
                 _min = simplexMethod.Min;
+                functionValue = temp;
+            }
+
+            do {
+                index++;
+                double newX = new Random().NextDouble(rectangle.LeftBottom.X, rectangle.RightBottom.X);
+                double newY = new Random().NextDouble(rectangle.LeftBottom.Y, rectangle.LeftTop.Y);
+                point = new(newX, newY);
+            } while ((temp = function.Value(point)) >= functionValue && index < Trying);
+
+            if (temp < functionValue) {
+                _min = point;
                 functionValue = temp;
             }
         }
