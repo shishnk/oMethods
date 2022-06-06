@@ -1,12 +1,12 @@
 namespace oMethods_4;
 
-public class SimpleRandomSearch : IMinMethod2D {
+public class UndirectedSimpleRandomSearch : IMinMethod2D {
     private Vector2D? _min;
     public Vector2D? Min => _min;
     public double Eps { get; init; }
     public double Probability { get; init; }
 
-    public SimpleRandomSearch(double eps, double probability)
+    public UndirectedSimpleRandomSearch(double eps, double probability)
         => (Eps, Probability) = (eps, probability);
 
     public void Compute(Rectangle rectangle, IFunction function) {
