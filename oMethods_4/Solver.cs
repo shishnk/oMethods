@@ -9,7 +9,7 @@ public class Solver {
             return this;
         }
 
-        public SolverBuilder SetMethod(IMinMethod2D method) {
+        public SolverBuilder SetMethod(ISearchMethod2D method) {
             _solver._method = method;
             return this;
         }
@@ -24,7 +24,7 @@ public class Solver {
     }
 
     private IFunction _function = default!;
-    private IMinMethod2D _method = default!;
+    private ISearchMethod2D _method = default!;
     private Rectangle _rectangle = default!;
 
     public void Compute() {

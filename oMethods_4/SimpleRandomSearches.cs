@@ -153,7 +153,7 @@ public class SimplexMethod : IMinMethod2D {
     }
 }
 
-// public class DirectedSimpleRandomSearch : ISearchMethod2D { //
+// public class DirectedSimpleRandomSearch : ISearchMethod2D { // алгоритм парной пробы
 //     private Vector2D? _min;
 //     public Vector2D? Min => _min;
 //     public double Eps { get; init; }
