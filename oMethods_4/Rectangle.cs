@@ -8,13 +8,13 @@ public readonly record struct Rectangle {
     public Vector2D RightTop { get; init; }
 
     [JsonIgnore]
-    public Vector2D RightBottom { get; init; }
+    public Vector2D RightBottom { get; }
 
     [JsonIgnore]
-    public Vector2D LeftTop { get; init; }
+    public Vector2D LeftTop { get; }
 
     [JsonIgnore]
-    public double Square { get; init; }
+    public double Square { get; }
 
     [JsonConstructor]
     public Rectangle(Vector2D leftBottom, Vector2D rightTop) {
