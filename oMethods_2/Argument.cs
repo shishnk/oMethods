@@ -14,7 +14,7 @@ public class ArgumentConverter : JsonConverter {
 
     public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) {
         Argument value;
-        
+
         var maintoken = JObject.Load(reader);
         var token = maintoken["Number"];
         int number = Convert.ToInt32(token);
@@ -23,7 +23,7 @@ public class ArgumentConverter : JsonConverter {
 
         token = maintoken["Point"];
         value.Variables = JsonConvert.DeserializeObject<double[]>(token.ToString());
-        
+
         return value;
     }
 
@@ -64,12 +64,21 @@ public class Argument : ICloneable {
     }
 
     public override bool Equals(Object obj) {
-        if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+        if ((obj == null) || !this.GetType().Equals(obj.GetType())) {
             return false;
-        else {
+        } else {
             Argument arg = (Argument)obj;
-            return (this.Number == arg.Number) && (this.Variables.OrderBy(x => x).SequenceEqual(arg.Variables.OrderBy(x => x)));
+            return (this.Number == arg.Number) && this.Variables.OrderBy(x => x).SequenceEqual(arg.Variables.OrderBy(x => x));
         }
+    }
+
+    public double Norm() {
+        double result = 0.0;
+
+        for (int i = 0; i < Number; i++)
+            result += Variables[i] * Variables[i];
+
+        return Math.Sqrt(result);
     }
 
     public static Argument operator -(Argument fstArg, Argument sndArg) {

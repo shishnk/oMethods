@@ -3,7 +3,7 @@ namespace oMethods_2;
 public record struct Interval {
     public double Left { get; init; }
     public double Right { get; init; }
-    public double Center { get; init; }
+    public double Center { get; }
 
     public Interval(double left, double right) {
         Left = left;

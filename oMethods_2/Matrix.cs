@@ -1,7 +1,7 @@
 namespace oMethods_2;
 
 public class Matrix {
-    private double[,] A;
+    private readonly double[,] A;
 
     public double this[int i, int j] {
         get => A[i, j];
@@ -46,6 +46,28 @@ public class Matrix {
             for (int j = 0; j < result.Size; j++)
                 result[i, j] = fstMatrix[i, j] + sndMatrix[i, j];
 
+        return result;
+    }
+
+    public static Matrix operator -(Matrix matrix) {
+        Matrix newMatrix = new(matrix.Size);
+
+        for (int i = 0; i < matrix.Size; i++)
+            for (int j = 0; j < matrix.Size; j++)
+                newMatrix[i, j] = -matrix[i, j];
+
+        return newMatrix;
+    }
+
+    public override string ToString() {
+        string result = "";
+
+        for (int i = 0; i < Size; i++)
+            for (int j = 0; j < Size; j++) {
+                result += A[i, j];
+                result += " ";
+            }
+        
         return result;
     }
 }
