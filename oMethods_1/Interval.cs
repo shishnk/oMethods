@@ -4,7 +4,7 @@ public record struct Interval
 {
     public double A { get; init; }
     public double B { get; init; }
-    public double Center { get; init; }
+    public double Center { get; }
 
     public Interval(double a, double b)
     {
